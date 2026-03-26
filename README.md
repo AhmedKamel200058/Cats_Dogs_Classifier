@@ -5,7 +5,7 @@ This is a Deep Learning web application that classifies images into **Cats** or 
 
 ## Live Demo
 You can try the live version of this app on Streamlit: 
-[Link to your space here]
+https://catsdogsclassifier.streamlit.app/
 
 ## Model Architecture
 
@@ -50,7 +50,7 @@ The model was trained on the famous **Kaggle Dogs vs. Cats dataset**, containing
 
 ## Project Structure 📂
 
-facial-expression-recognition/
+CatsDogsClassifier/
 ├── app.py                # Main script to run the Streamlit app
 ├── model.h5              # The pre-trained CNN model.
 ├── requirements.txt      # List of dependencies for the project
