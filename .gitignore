@@ -1,0 +1,19 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Gradio files
+.gradio/
+flagged/
+
+# Virtual environments
+venv/
+.env
+env/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+
