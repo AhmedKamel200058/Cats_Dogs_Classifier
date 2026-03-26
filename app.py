@@ -11,11 +11,24 @@ st.set_page_config(page_title="🐾 Cat vs. Dog Classifier", layout="centered")
 os.environ["KERAS_BACKEND"] = "tensorflow"
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-# --- Model Loading ---
+# --- FIX: Custom Class to handle the quantization_config error ---
+class FixedDense(tf.keras.layers.Dense):
+    def __init__(self, *args, **kwargs):
+        # Remove the problematic keyword if it exists
+        kwargs.pop('quantization_config', None)
+        super().__init__(*args, **kwargs)
+
+# --- Model Loading with Custom Objects ---
 @st.cache_resource
 def load_my_model():
     try:
-        model = tf.keras.models.load_model('model.keras', compile=False, safe_mode=False)
+        # We tell Keras to use our 'FixedDense' whenever it sees 'Dense' in the file
+        custom_objects = {'Dense': FixedDense}
+        model = tf.keras.models.load_model(
+            'model.keras', 
+            custom_objects=custom_objects, 
+            compile=False
+        )
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
@@ -23,34 +36,25 @@ def load_my_model():
 
 model = load_my_model()
 
+# --- UI and Logic ---
 st.title("🐾 Cat vs. Dog Classifier")
-
-# --- Image Upload ---
-uploaded_file = st.file_uploader("Select an image file...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    
-    
     st.image(image, caption='Uploaded Image', width='stretch')
     
     if st.button('Predict'):
         if model is not None:
-            with st.spinner('Processing...'):
-                
+            with st.spinner('Analyzing...'):
                 img_rgb = image.convert('RGB')
-                
-                # Preprocessing
-                IMAGE_SIZE = (150, 150)
-                img_resized = img_rgb.resize(IMAGE_SIZE)
-                img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
-                img_array = img_array / 255.0
-                img_array = np.expand_dims(img_array, axis=0) # Result: (1, 150, 150, 3)
+                img_resized = img_rgb.resize((150, 150))
+                img_array = tf.keras.preprocessing.image.img_to_array(img_resized) / 255.0
+                img_array = np.expand_dims(img_array, axis=0)
 
-                # Prediction
                 prediction = model.predict(img_array, verbose=0)[0]
-
-                # Cat=1, Dog=0 logic
+                
+                # Based on your labels: Cat=1, Dog=0
                 prob_cat = float(prediction[1])
                 prob_dog = 1 - prob_cat
 
@@ -61,6 +65,6 @@ if uploaded_file is not None:
                 st.progress(prob_dog)
 
                 if prob_cat > 0.5:
-                    st.success(f"Final Perdict: It's a CAT!")
+                    st.success("Result: It's a CAT!")
                 else:
-                    st.success(f"Final Perdict: It's a DOG!")
+                    st.success("Result: It's a DOG!")
