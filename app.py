@@ -15,7 +15,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 @st.cache_resource
 def load_my_model():
     try:
-        model = tf.keras.models.load_model('model.h5', compile=False, safe_mode=False)
+        model = tf.keras.models.load_model('model.keras', compile=False, safe_mode=False)
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
